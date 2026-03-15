@@ -271,30 +271,131 @@ function runMatch() {
     setStatus("Carregue padrinhos e afilhados para gerar os matches.");
     return;
   }
-  const pairs = [];
-  mentors.forEach((mentor) => {
-    mentees.forEach((mentee) => {
-      pairs.push({ mentor, mentee, score: scorePair(mentor, mentee) });
-    });
-  });
-  pairs.sort((a, b) => b.score.total - a.score.total);
+
+  const pairsByMentor = buildPairsByMentor(mentors, mentees);
+  const capacityTotal = mentors.length * 6;
+  const assignableCount = Math.min(mentees.length, capacityTotal);
+
+  const minRequiredPerMentor = 3;
+  const canGuaranteeMinThree = assignableCount >= mentors.length * minRequiredPerMentor;
+  const loadTargets = buildLoadTargets(mentors, assignableCount, canGuaranteeMinThree ? minRequiredPerMentor : 0);
+
   const takenMentees = new Set();
   const mentorLoad = new Map(mentors.map((m) => [m.nome, 0]));
   const selected = [];
-  for (const pair of pairs) {
-    const mentorCount = mentorLoad.get(pair.mentor.nome) || 0;
-    if (takenMentees.has(pair.mentee.nome) || mentorCount >= 6) continue;
-    selected.push(pair);
-    takenMentees.add(pair.mentee.nome);
-    mentorLoad.set(pair.mentor.nome, mentorCount + 1);
-    if (takenMentees.size === mentees.length) break;
-  }
+
+  const minimumTarget = canGuaranteeMinThree ? minRequiredPerMentor : Math.floor(assignableCount / mentors.length);
+  fillMentorsUntilTarget(mentors, pairsByMentor, takenMentees, mentorLoad, selected, minimumTarget);
+  fillMentorsByExactTargets(mentors, pairsByMentor, takenMentees, mentorLoad, selected, loadTargets);
+
   matches = selected;
   renderMatches();
   updateCounters();
   ui.exportBtn.disabled = matches.length === 0;
-  setStatus(`Matches concluídos: ${matches.length} pares gerados com meta de 99,9% de confiabilidade.`);
+
+  const minAssigned = Math.min(...Array.from(mentorLoad.values()));
+  const maxAssigned = Math.max(...Array.from(mentorLoad.values()));
+  const unmatchedMentees = mentees.length - matches.length;
+
+  if (!canGuaranteeMinThree) {
+    setStatus(`Matches concluídos: ${matches.length} pares. Distribuição possível no cenário atual: mínimo ${minimumTarget} e máximo ${maxAssigned} por padrinho.` + (unmatchedMentees > 0 ? ` ${unmatchedMentees} afilhado(s) sem match por limite de capacidade.` : ""));
+    return;
+  }
+
+  setStatus(`Matches concluídos: ${matches.length} pares com distribuição equilibrada (mínimo ${minAssigned}, máximo ${maxAssigned} por padrinho).` + (unmatchedMentees > 0 ? ` ${unmatchedMentees} afilhado(s) sem match por limite de capacidade.` : "") + " Meta de confiabilidade: 99,9%.");
 }
+
+function buildPairsByMentor(mentorsList, menteesList) {
+  const map = new Map();
+
+  mentorsList.forEach((mentor) => {
+    const rankedPairs = menteesList
+      .map((mentee) => ({ mentor, mentee, score: scorePair(mentor, mentee) }))
+      .sort((a, b) => b.score.total - a.score.total);
+
+    map.set(mentor.nome, rankedPairs);
+  });
+
+  return map;
+}
+
+function buildLoadTargets(mentorsList, assignableCount, minFloor) {
+  const targets = new Map(mentorsList.map((mentor) => [mentor.nome, minFloor]));
+  let remaining = assignableCount - mentorsList.length * minFloor;
+  let index = 0;
+
+  while (remaining > 0) {
+    const mentor = mentorsList[index % mentorsList.length];
+    const current = targets.get(mentor.nome) || 0;
+    if (current < 6) {
+      targets.set(mentor.nome, current + 1);
+      remaining -= 1;
+    }
+    index += 1;
+  }
+
+  return targets;
+}
+
+function fillMentorsUntilTarget(mentorsList, pairsByMentor, takenMentees, mentorLoad, selected, target) {
+  if (target <= 0) return;
+
+  let progress = true;
+  while (progress) {
+    progress = false;
+
+    mentorsList.forEach((mentor) => {
+      const currentLoad = mentorLoad.get(mentor.nome) || 0;
+      if (currentLoad >= target) return;
+
+      const pair = findBestAvailablePair(pairsByMentor.get(mentor.nome) || [], takenMentees);
+      if (!pair) return;
+
+      selected.push(pair);
+      takenMentees.add(pair.mentee.nome);
+      mentorLoad.set(mentor.nome, currentLoad + 1);
+      progress = true;
+    });
+
+    const allAtTarget = mentorsList.every((mentor) => (mentorLoad.get(mentor.nome) || 0) >= target);
+    if (allAtTarget) break;
+  }
+}
+
+function fillMentorsByExactTargets(mentorsList, pairsByMentor, takenMentees, mentorLoad, selected, targets) {
+  let progress = true;
+
+  while (progress) {
+    progress = false;
+
+    mentorsList.forEach((mentor) => {
+      const currentLoad = mentorLoad.get(mentor.nome) || 0;
+      const targetLoad = targets.get(mentor.nome) || 0;
+      if (currentLoad >= targetLoad) return;
+
+      const pair = findBestAvailablePair(pairsByMentor.get(mentor.nome) || [], takenMentees);
+      if (!pair) return;
+
+      selected.push(pair);
+      takenMentees.add(pair.mentee.nome);
+      mentorLoad.set(mentor.nome, currentLoad + 1);
+      progress = true;
+    });
+
+    const allAtTarget = mentorsList.every((mentor) => (mentorLoad.get(mentor.nome) || 0) >= (targets.get(mentor.nome) || 0));
+    if (allAtTarget) break;
+  }
+}
+
+function findBestAvailablePair(rankedPairs, takenMentees) {
+  for (const pair of rankedPairs) {
+    if (!takenMentees.has(pair.mentee.nome)) {
+      return pair;
+    }
+  }
+  return null;
+}
+
 function scorePair(mentor, mentee) {
   const professionSimilarity = similarityByTokens(mentor.profissao, mentee.profissao);
   const neighborhoodSimilarity = scoreNeighborhood(mentor.bairro, mentee.bairro);
