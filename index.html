@@ -47,11 +47,13 @@
           <button id="import-mentor" class="btn primary">Importar Padrinhos</button>
         </div>
 
-        <label class="field">
-          <span>Colar CSV manualmente</span>
-          <textarea id="mentor-paste" rows="8" placeholder="Nome Completo,Profissão,Bairro,Signo,Música,Comunicação,Tempo Livre"></textarea>
-        </label>
-        <button id="import-mentor-paste" class="btn secondary">Enviar texto CSV de Padrinhos</button>
+        <form id="mentor-paste-form" class="paste-form">
+          <label class="field">
+            <span>Colar CSV manualmente</span>
+            <textarea id="mentor-paste" rows="8" placeholder="Nome Completo,Profissão,Bairro,Signo,Música,Comunicação,Tempo Livre"></textarea>
+          </label>
+          <button id="import-mentor-paste" type="submit" class="btn secondary">Enviar Texto CSV</button>
+        </form>
       </div>
 
       <div class="tab-content" id="tab-afilhado" role="tabpanel">
@@ -66,11 +68,13 @@
           <button id="import-mentee" class="btn primary">Importar Afilhados</button>
         </div>
 
-        <label class="field">
-          <span>Colar CSV manualmente</span>
-          <textarea id="mentee-paste" rows="8" placeholder="Nome Completo,Profissão,Bairro,Signo,Música,Comunicação,Tempo Livre"></textarea>
-        </label>
-        <button id="import-mentee-paste" class="btn secondary">Enviar texto CSV de Afilhados</button>
+        <form id="mentee-paste-form" class="paste-form">
+          <label class="field">
+            <span>Colar CSV manualmente</span>
+            <textarea id="mentee-paste" rows="8" placeholder="Nome Completo,Profissão,Bairro,Signo,Música,Comunicação,Tempo Livre"></textarea>
+          </label>
+          <button id="import-mentee-paste" type="submit" class="btn secondary">Enviar Texto CSV</button>
+        </form>
       </div>
 
       <div class="tab-content" id="tab-guia" role="tabpanel">

@@ -58,8 +58,17 @@ function setupTabs() {
 function setupActions() {
   document.getElementById("import-mentor").addEventListener("click", () => importFromFile("mentor-file", "mentor"));
   document.getElementById("import-mentee").addEventListener("click", () => importFromFile("mentee-file", "mentee"));
-  document.getElementById("import-mentor-paste").addEventListener("click", () => importFromPaste("mentor-paste", "mentor"));
-  document.getElementById("import-mentee-paste").addEventListener("click", () => importFromPaste("mentee-paste", "mentee"));
+
+  document.getElementById("mentor-paste-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    importFromPaste("mentor-paste", "mentor");
+  });
+
+  document.getElementById("mentee-paste-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    importFromPaste("mentee-paste", "mentee");
+  });
+
   document.getElementById("run-match").addEventListener("click", runMatch);
   document.getElementById("export-match").addEventListener("click", exportMatches);
   document.getElementById("reset-match").addEventListener("click", () => ui.resetDialog.showModal());

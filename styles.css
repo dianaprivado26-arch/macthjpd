@@ -94,6 +94,11 @@ body {
   margin-bottom: 0.75rem;
 }
 
+.paste-form {
+  display: grid;
+  gap: 0.5rem;
+}
+
 input[type="file"], textarea {
   width: 100%;
   border: 1px solid #bbd4ef;
