@@ -6,7 +6,7 @@
   --white: #ffffff;
   --text: #1d2a3a;
   --danger: #c62828;
-  --shadow: 0 8px 20px rgba(13, 71, 161, 0.14);
+  --shadow: 0 6px 14px rgba(13, 71, 161, 0.1);
 }
 
 * { box-sizing: border-box; }
@@ -15,14 +15,24 @@ body {
   margin: 0;
   font-family: "Segoe UI", Arial, sans-serif;
   color: var(--text);
-  background: linear-gradient(180deg, var(--blue-100), #f4f9ff);
+  background: #f4f9ff;
 }
 
 .topbar {
   background: var(--blue-900);
   color: var(--white);
-  padding: 1.25rem 1rem;
-  text-align: center;
+  padding: 1.1rem 1rem;
+  text-align: left;
+}
+
+.topbar h1,
+.topbar p {
+  margin: 0;
+}
+
+.topbar p {
+  margin-top: 0.35rem;
+  opacity: 0.95;
 }
 
 .container {
@@ -39,10 +49,10 @@ body {
 
 .kpi-card {
   background: var(--white);
-  border-radius: 12px;
+  border-radius: 10px;
   box-shadow: var(--shadow);
   padding: 1rem;
-  border-left: 6px solid var(--blue-500);
+  border-left: 4px solid var(--blue-500);
 }
 
 .kpi-card p { font-size: 2rem; margin: 0; color: var(--blue-700); font-weight: 700; }
@@ -50,7 +60,7 @@ body {
 .tabs, .actions, .results {
   margin-top: 1rem;
   background: var(--white);
-  border-radius: 12px;
+  border-radius: 10px;
   box-shadow: var(--shadow);
   padding: 1rem;
 }
@@ -63,10 +73,10 @@ body {
 }
 
 .tab-button {
-  border: 2px solid var(--blue-500);
+  border: 1px solid var(--blue-500);
   background: var(--white);
   color: var(--blue-700);
-  border-radius: 999px;
+  border-radius: 6px;
   padding: 0.5rem 1rem;
   cursor: pointer;
   font-weight: 600;
@@ -97,14 +107,32 @@ body {
 .paste-form {
   display: grid;
   gap: 0.5rem;
+  margin-top: 0.5rem;
 }
 
-input[type="file"], textarea {
+.manual-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+  padding: 0.75rem;
+  background: #f9fcff;
+  border: 1px solid #d9e9fb;
+  border-radius: 8px;
+}
+
+.manual-form .btn {
+  align-self: end;
+  min-height: 42px;
+}
+
+input[type="file"], input[type="text"], textarea {
   width: 100%;
   border: 1px solid #bbd4ef;
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 0.65rem;
   font-size: 0.95rem;
+  background: #fff;
 }
 
 .btn {
@@ -120,7 +148,7 @@ input[type="file"], textarea {
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .primary { background: var(--blue-500); color: var(--white); }
-.secondary { background: #eef5ff; color: var(--blue-900); border: 2px solid var(--blue-500); }
+.secondary { background: #eef5ff; color: var(--blue-900); border: 1px solid var(--blue-500); }
 .danger { background: var(--danger); color: var(--white); }
 .giant { font-size: 1rem; min-height: 48px; }
 
@@ -139,10 +167,10 @@ input[type="file"], textarea {
 }
 
 .mentor-group {
-  border: 2px solid var(--blue-100);
-  border-radius: 10px;
+  border: 1px solid var(--blue-100);
+  border-radius: 8px;
   padding: 0.75rem;
-  background: #fbfdff;
+  background: #fcfeff;
 }
 
 .match-item {
@@ -155,7 +183,7 @@ input[type="file"], textarea {
 
 dialog {
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 1rem;
   max-width: 420px;
 }
@@ -165,4 +193,5 @@ dialog::backdrop { background: rgba(10, 35, 74, 0.55); }
 
 @media (max-width: 700px) {
   .upload-grid { grid-template-columns: 1fr; }
+  .manual-form { grid-template-columns: 1fr; }
 }

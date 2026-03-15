@@ -8,6 +8,14 @@ const REQUIRED_FIELDS = [
   "tempo livre"
 ];
 
+const MATCH_BASE_ORDER = [
+  "nome completo",
+  "profissão",
+  "bairro",
+  "signo",
+  "música"
+];
+
 const WEIGHTS = {
   profissao: 40,
   bairro: 30,
@@ -69,6 +77,16 @@ function setupActions() {
     importFromPaste("mentee-paste", "mentee");
   });
 
+  document.getElementById("mentor-manual-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    submitManualForm("mentor");
+  });
+
+  document.getElementById("mentee-manual-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    submitManualForm("mentee");
+  });
+
   document.getElementById("run-match").addEventListener("click", runMatch);
   document.getElementById("export-match").addEventListener("click", exportMatches);
   document.getElementById("reset-match").addEventListener("click", () => ui.resetDialog.showModal());
@@ -95,6 +113,35 @@ function importFromPaste(textareaId, type) {
     return;
   }
   importCsvText(text, type);
+}
+
+function submitManualForm(type) {
+  const prefix = type === "mentor" ? "mentor" : "mentee";
+  const record = {
+    nome: document.getElementById(`${prefix}-name`).value.trim(),
+    profissao: document.getElementById(`${prefix}-profession`).value.trim(),
+    bairro: document.getElementById(`${prefix}-neighborhood`).value.trim(),
+    signo: document.getElementById(`${prefix}-sign`).value.trim(),
+    musica: document.getElementById(`${prefix}-music`).value.trim(),
+    comunicacao: document.getElementById(`${prefix}-communication`).value.trim(),
+    tempoLivre: document.getElementById(`${prefix}-free-time`).value.trim()
+  };
+
+  if (!record.nome || !record.profissao || !record.bairro || !record.signo || !record.musica) {
+    setStatus("Preencha NOME COMPLETO, PROFISSÃO, BAIRRO, SIGNO e MÚSICA para enviar.");
+    return;
+  }
+
+  if (type === "mentor") {
+    mentors = mergeUniqueByName(mentors, [record]);
+    setStatus(`Padrinho cadastrado manualmente. Total atual: ${mentors.length}.`);
+    document.getElementById("mentor-manual-form").reset();
+  } else {
+    mentees = mergeUniqueByName(mentees, [record]);
+    setStatus(`Afilhado cadastrado manualmente. Total atual: ${mentees.length}.`);
+    document.getElementById("mentee-manual-form").reset();
+  }
+  updateCounters();
 }
 
 function importCsvText(text, type) {
@@ -140,6 +187,12 @@ function validateHeaders(headers) {
   if (missing.length) {
     throw new Error(`Campos obrigatórios ausentes: ${missing.join(", ")}.`);
   }
+
+  const baseIndexes = MATCH_BASE_ORDER.map((field) => headers.indexOf(field));
+  const inOrder = baseIndexes.every((index, pos) => pos === 0 || index > baseIndexes[pos - 1]);
+  if (!inOrder) {
+    throw new Error("A ordem base deve seguir: Nome Completo, Profissão, Bairro, Signo, Música.");
+  }
 }
 
 function normalizeRecords(records) {
@@ -167,7 +220,7 @@ function mergeUniqueByName(base, incoming) {
 
 function runMatch() {
   if (!mentors.length || !mentees.length) {
-    setStatus("Carregue padrinhos e afilhados para gerar os matchs.");
+    setStatus("Carregue padrinhos e afilhados para gerar os matches.");
     return;
   }
 
@@ -199,7 +252,7 @@ function runMatch() {
   renderMatches();
   updateCounters();
   ui.exportBtn.disabled = matches.length === 0;
-  setStatus(`Matchs concluídos: ${matches.length} pares gerados com objetivo de 98% de assertividade.`);
+  setStatus(`Matches concluídos: ${matches.length} pares gerados com meta de 99,9% de confiabilidade.`);
 }
 
 function scorePair(mentor, mentee) {
@@ -249,6 +302,8 @@ function renderMatches() {
         <p><strong>Bairro (${WEIGHTS.bairro}%):</strong> ${safeValue(match.mentor.bairro)} ↔ ${safeValue(match.mentee.bairro)} = ${match.score.byField.bairro.toFixed(2)}%</p>
         <p><strong>Signo (${WEIGHTS.signo}%):</strong> ${safeValue(match.mentor.signo)} ↔ ${safeValue(match.mentee.signo)} = ${match.score.byField.signo.toFixed(2)}%</p>
         <p><strong>Música (${WEIGHTS.musica}%):</strong> ${safeValue(match.mentor.musica)} ↔ ${safeValue(match.mentee.musica)} = ${match.score.byField.musica.toFixed(2)}%</p>
+        <p><strong>Comunicação (informativo):</strong> ${safeValue(match.mentor.comunicacao)} ↔ ${safeValue(match.mentee.comunicacao)}</p>
+        <p><strong>Tempo Livre (informativo):</strong> ${safeValue(match.mentor.tempoLivre)} ↔ ${safeValue(match.mentee.tempoLivre)}</p>
       `;
       card.appendChild(item);
     });
@@ -259,7 +314,7 @@ function renderMatches() {
 
 function exportMatches() {
   if (!matches.length) {
-    setStatus("Não há matchs para exportar.");
+    setStatus("Não há matches para exportar.");
     return;
   }
 
@@ -281,7 +336,7 @@ function exportMatches() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = "matchs_ong.csv";
+  link.download = "matchs_jpd.csv";
   link.click();
   URL.revokeObjectURL(url);
 }
@@ -293,7 +348,7 @@ function resetAll() {
   ui.results.innerHTML = "";
   ui.exportBtn.disabled = true;
   updateCounters();
-  setStatus("Dados e matchs reiniciados.");
+  setStatus("Dados e matches reiniciados.");
   ui.resetDialog.close();
 }
 
