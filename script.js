@@ -1,13 +1,3 @@
-const REQUIRED_FIELDS = [
-  "nome completo",
-  "profissão",
-  "bairro",
-  "signo",
-  "música",
-  "comunicação",
-  "tempo livre"
-];
-
 const MATCH_BASE_ORDER = [
   "nome completo",
   "profissão",
@@ -15,6 +5,8 @@ const MATCH_BASE_ORDER = [
   "signo",
   "música"
 ];
+
+const OPTIONAL_FIELDS = ["comunicação", "tempo livre"];
 
 const WEIGHTS = {
   profissao: 40,
@@ -169,13 +161,15 @@ function parseCsv(text) {
 
   const headerLine = lines[0];
   const delimiter = (headerLine.match(/;/g) || []).length > (headerLine.match(/,/g) || []).length ? ";" : ",";
-  const headers = headerLine.split(delimiter).map((h) => h.trim().toLowerCase());
+  const rawHeaders = headerLine.split(delimiter).map((h) => h.trim());
+  const headers = rawHeaders.map((header) => canonicalizeHeader(header));
 
   validateHeaders(headers);
 
   return lines.slice(1).map((line) => {
     const cols = line.split(delimiter).map((c) => c.trim());
     return headers.reduce((acc, header, index) => {
+      if (!header) return acc;
       acc[header] = cols[index] ?? "";
       return acc;
     }, {});
@@ -183,9 +177,14 @@ function parseCsv(text) {
 }
 
 function validateHeaders(headers) {
-  const missing = REQUIRED_FIELDS.filter((field) => !headers.includes(field));
+  const missing = MATCH_BASE_ORDER.filter((field) => !headers.includes(field));
   if (missing.length) {
     throw new Error(`Campos obrigatórios ausentes: ${missing.join(", ")}.`);
+  }
+
+  const unknownHeaders = headers.filter((field) => field && !MATCH_BASE_ORDER.includes(field) && !OPTIONAL_FIELDS.includes(field));
+  if (unknownHeaders.length) {
+    throw new Error(`Cabeçalho não reconhecido: ${unknownHeaders.join(", ")}.`);
   }
 
   const baseIndexes = MATCH_BASE_ORDER.map((field) => headers.indexOf(field));
@@ -193,6 +192,24 @@ function validateHeaders(headers) {
   if (!inOrder) {
     throw new Error("A ordem base deve seguir: Nome Completo, Profissão, Bairro, Signo, Música.");
   }
+}
+
+function canonicalizeHeader(header) {
+  const normalized = normalizeText(header);
+  const headerMap = {
+    "nome completo": "nome completo",
+    nome: "nome completo",
+    "profissao": "profissão",
+    "profissao/area": "profissão",
+    bairro: "bairro",
+    signo: "signo",
+    musica: "música",
+    "comunicacao": "comunicação",
+    "preferencia de comunicacao": "comunicação",
+    "tempo livre": "tempo livre"
+  };
+
+  return headerMap[normalized] || "";
 }
 
 function normalizeRecords(records) {
