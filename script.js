@@ -371,14 +371,14 @@ function exportMatches() {
       "Conexão 6 - Tempo Livre"
     ],
     ...matches.map((m) => {
-      const conexao1 = `Profissão (${WEIGHTS.profissao}%): ${safeValue(m.mentor.profissao)} ↔ ${safeValue(m.mentee.profissao)} (${m.score.byField.profissao.toFixed(2)}%)`;
-      const conexao2 = `Bairro (${WEIGHTS.bairro}%): ${safeValue(m.mentor.bairro)} ↔ ${safeValue(m.mentee.bairro)} (${m.score.byField.bairro.toFixed(2)}%)`;
-      const conexao3 = `Signo (${WEIGHTS.signo}%): ${safeValue(m.mentor.signo)} ↔ ${safeValue(m.mentee.signo)} (${m.score.byField.signo.toFixed(2)}%)`;
-      const conexao4 = `Música (${WEIGHTS.musica}%): ${safeValue(m.mentor.musica)} ↔ ${safeValue(m.mentee.musica)} (${m.score.byField.musica.toFixed(2)}%)`;
+      const conexao1 = `Profissão (${WEIGHTS.profissao}%): ${safeValue(m.mentor.profissao)} ↔ ${safeValue(m.mentee.profissao)} = ${m.score.byField.profissao.toFixed(2)}%`;
+      const conexao2 = `Bairro (${WEIGHTS.bairro}%): ${safeValue(m.mentor.bairro)} ↔ ${safeValue(m.mentee.bairro)} = ${m.score.byField.bairro.toFixed(2)}%`;
+      const conexao3 = `Signo (${WEIGHTS.signo}%): ${safeValue(m.mentor.signo)} ↔ ${safeValue(m.mentee.signo)} = ${m.score.byField.signo.toFixed(2)}%`;
+      const conexao4 = `Música (${WEIGHTS.musica}%): ${safeValue(m.mentor.musica)} ↔ ${safeValue(m.mentee.musica)} = ${m.score.byField.musica.toFixed(2)}%`;
       const commSimilarity = (similarityByTokens(m.mentor.comunicacao, m.mentee.comunicacao) * 100).toFixed(2);
       const freeTimeSimilarity = (similarityByTokens(m.mentor.tempoLivre, m.mentee.tempoLivre) * 100).toFixed(2);
-      const conexao5 = `Comunicação: ${safeValue(m.mentor.comunicacao)} ↔ ${safeValue(m.mentee.comunicacao)} (${commSimilarity}%)`;
-      const conexao6 = `Tempo Livre: ${safeValue(m.mentor.tempoLivre)} ↔ ${safeValue(m.mentee.tempoLivre)} (${freeTimeSimilarity}%)`;
+      const conexao5 = `Comunicação (informativo): ${safeValue(m.mentor.comunicacao)} ↔ ${safeValue(m.mentee.comunicacao)} (${commSimilarity}%)`;
+      const conexao6 = `Tempo Livre (informativo): ${safeValue(m.mentor.tempoLivre)} ↔ ${safeValue(m.mentee.tempoLivre)} (${freeTimeSimilarity}%)`;
 
       return [
         m.mentor.nome,
@@ -394,14 +394,27 @@ function exportMatches() {
     })
   ];
 
-  const csv = rows.map((line) => line.join(";")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const csv = serializeCsv(rows, ";");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
   link.download = "matchs_jpd.csv";
   link.click();
   URL.revokeObjectURL(url);
+}
+
+
+function serializeCsv(rows, delimiter = ";") {
+  return rows
+    .map((row) => row.map((value) => toCsvCell(value, delimiter)).join(delimiter))
+    .join("\n");
+}
+
+function toCsvCell(value, delimiter = ";") {
+  const text = String(value ?? "");
+  const escaped = text.replace(/"/g, '""');
+  return `"${escaped}"`;
 }
 
 function resetAll() {
