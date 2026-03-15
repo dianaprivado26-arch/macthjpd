@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel de Matchs JPD</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Painel de Matchs JPD</h1>
+    <p>Importe e Gere Dados de Conexão</p>
+  </header>
+
+  <main class="container">
+    <section class="kpis">
+      <article class="kpi-card">
+        <h2>Padrinhos carregados</h2>
+        <p id="mentor-count">0</p>
+      </article>
+      <article class="kpi-card">
+        <h2>Afilhados carregados</h2>
+        <p id="mentee-count">0</p>
+      </article>
+      <article class="kpi-card">
+        <h2>Matches gerados</h2>
+        <p id="match-count">0</p>
+      </article>
+    </section>
+
+    <section class="tabs" aria-label="Abas principais">
+      <div class="tab-buttons" role="tablist">
+        <button class="tab-button active" data-tab="padrinho" role="tab" aria-selected="true" type="button">Padrinho</button>
+        <button class="tab-button" data-tab="afilhado" role="tab" aria-selected="false" type="button">Afilhado</button>
+        <button class="tab-button" data-tab="guia" role="tab" aria-selected="false" type="button">Guia</button>
+      </div>
+
+      <div class="tab-content active" id="tab-padrinho" role="tabpanel">
+        <h2>Importar dados de Padrinhos</h2>
+        <p>Cadastro individual ou em massa via CSV (aceita separadores <strong>,</strong> ou <strong>;</strong>).</p>
+
+        <div class="upload-grid">
+          <label class="field">
+            <span>Arquivo CSV</span>
+            <input type="file" id="mentor-file" accept=".csv,text/csv" />
+          </label>
+          <button id="import-mentor" class="btn primary" type="button">Importar Padrinhos</button>
+        </div>
+
+        <form id="mentor-paste-form" class="paste-form">
+          <label class="field">
+            <span>Colar CSV manualmente</span>
+            <textarea id="mentor-paste" rows="6" placeholder="Nome Completo,Profissão,Bairro,Signo,Música,Comunicação,Tempo Livre"></textarea>
+          </label>
+          <button id="import-mentor-paste" type="submit" class="btn secondary">Enviar Texto CSV</button>
+        </form>
+
+        <h3>Inscrição Manual de Padrinho</h3>
+        <form id="mentor-manual-form" class="manual-form">
+          <label class="field"><span>NOME COMPLETO</span><input id="mentor-name" type="text" required /></label>
+          <label class="field"><span>PROFISSÃO</span><input id="mentor-profession" type="text" required /></label>
+          <label class="field"><span>BAIRRO</span><input id="mentor-neighborhood" type="text" required /></label>
+          <label class="field"><span>SIGNO</span><input id="mentor-sign" type="text" required /></label>
+          <label class="field"><span>MÚSICA</span><input id="mentor-music" type="text" required /></label>
+          <label class="field"><span>PREFERÊNCIA DE COMUNICAÇÃO (informativo)</span><input id="mentor-communication" type="text" /></label>
+          <label class="field"><span>TEMPO LIVRE (informativo)</span><input id="mentor-free-time" type="text" /></label>
+          <button class="btn primary" type="submit">Enviar</button>
+        </form>
+      </div>
+
+      <div class="tab-content" id="tab-afilhado" role="tabpanel">
+        <h2>Importar dados de Afilhados</h2>
+        <p>Cadastro individual ou em massa via CSV (aceita separadores <strong>,</strong> ou <strong>;</strong>).</p>
+
+        <div class="upload-grid">
+          <label class="field">
+            <span>Arquivo CSV</span>
+            <input type="file" id="mentee-file" accept=".csv,text/csv" />
+          </label>
+          <button id="import-mentee" class="btn primary" type="button">Importar Afilhados</button>
+        </div>
+
+        <form id="mentee-paste-form" class="paste-form">
+          <label class="field">
+            <span>Colar CSV manualmente</span>
+            <textarea id="mentee-paste" rows="6" placeholder="Nome Completo,Profissão,Bairro,Signo,Música,Comunicação,Tempo Livre"></textarea>
+          </label>
+          <button id="import-mentee-paste" type="submit" class="btn secondary">Enviar Texto CSV</button>
+        </form>
+
+        <h3>Inscrição Manual de Afilhado</h3>
+        <form id="mentee-manual-form" class="manual-form">
+          <label class="field"><span>NOME COMPLETO</span><input id="mentee-name" type="text" required /></label>
+          <label class="field"><span>PROFISSÃO</span><input id="mentee-profession" type="text" required /></label>
+          <label class="field"><span>BAIRRO</span><input id="mentee-neighborhood" type="text" required /></label>
+          <label class="field"><span>SIGNO</span><input id="mentee-sign" type="text" required /></label>
+          <label class="field"><span>MÚSICA</span><input id="mentee-music" type="text" required /></label>
+          <label class="field"><span>PREFERÊNCIA DE COMUNICAÇÃO (informativo)</span><input id="mentee-communication" type="text" /></label>
+          <label class="field"><span>TEMPO LIVRE (informativo)</span><input id="mentee-free-time" type="text" /></label>
+          <button class="btn primary" type="submit">Enviar</button>
+        </form>
+      </div>
+
+      <div class="tab-content" id="tab-guia" role="tabpanel">
+        <h2>Guia de uso</h2>
+        <div class="guide">
+          <h3>Formato CSV aceito</h3>
+          <ul>
+            <li>Separador: vírgula (<strong>,</strong>) ou ponto e vírgula (<strong>;</strong>).</li>
+            <li>Ordem base recomendada para matching: <strong>NOME COMPLETO, PROFISSÃO, BAIRRO, SIGNO, MÚSICA</strong>.</li>
+            <li>Campos informativos: <strong>COMUNICAÇÃO</strong> e <strong>TEMPO LIVRE</strong>.</li>
+            <li>O sistema remove registros duplicados por nome completo dentro de cada grupo.</li>
+          </ul>
+          <h3>Exemplo de cabeçalho</h3>
+          <code>Nome Completo;Profissão;Bairro;Signo;Música;Comunicação;Tempo Livre</code>
+          <h3>Regras de Match</h3>
+          <ul>
+            <li>1 afilhado só pode ter 1 padrinho.</li>
+            <li>Cada padrinho deve ter no mínimo 3 e no máximo 6 afilhados (quando o volume total permitir).</li>
+            <li>Afinidade ponderada: Profissão 40%, Bairro 30%, Signo 15%, Música 15%.</li>
+            <li>A pontuação final é calculada com casas decimais e detalhamento campo a campo.</li>
+            <li>Meta de assertividade configurada: 99,9%.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="actions">
+      <button id="run-match" class="btn primary giant" type="button">Gerar Matches</button>
+      <button id="export-match" class="btn secondary giant" type="button" disabled>Exportar CSV</button>
+      <button id="reset-match" class="btn danger giant" type="button">Reiniciar</button>
+      <p id="status" class="status" aria-live="polite"></p>
+    </section>
+
+    <section class="results">
+      <h2>Resultados agrupados por padrinho</h2>
+      <p class="target">Objetivo de assertividade: <strong>99,9%</strong></p>
+      <div id="match-results" class="match-results"></div>
+    </section>
+  </main>
+
+  <dialog id="confirm-reset">
+    <h2>Tem certeza?</h2>
+    <p>Isso fará você reiniciar todos os matches.</p>
+    <div class="dialog-actions">
+      <button id="confirm-no" class="btn secondary" type="button">Não</button>
+      <button id="confirm-yes" class="btn danger" type="button">Sim</button>
+    </div>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
