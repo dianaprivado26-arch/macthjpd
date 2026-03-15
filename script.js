@@ -94,13 +94,15 @@ async function importFromFile(inputId, type) {
     setStatus("Selecione um arquivo CSV antes de importar.");
     return;
   }
-  const text = await file.text();
+  const rawText = await file.text();
+  const text = preprocessCsvInputText(rawText);
   importCsvText(text, type);
 }
 function importFromPaste(textareaId, type) {
   if (isImportingPaste) return;
   isImportingPaste = true;
-  const text = document.getElementById(textareaId).value.trim();
+  const rawText = document.getElementById(textareaId).value.trim();
+  const text = preprocessCsvInputText(rawText);
   if (!text) {
     setStatus("Cole o conteúdo CSV para enviar.");
     isImportingPaste = false;
@@ -137,6 +139,19 @@ function submitManualForm(type) {
   }
   updateCounters();
 }
+function preprocessCsvInputText(text) {
+  const normalizedBreaks = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const hasRealNewline = normalizedBreaks.includes("\n");
+  if (hasRealNewline) return normalizedBreaks;
+
+  // Suporta conteúdo colado com quebras escapadas, ex: "linha1\\nlinha2"
+  if (normalizedBreaks.includes("\\n")) {
+    return normalizedBreaks.replace(/\\n/g, "\n");
+  }
+
+  return normalizedBreaks;
+}
+
 function importCsvText(text, type) {
   try {
     const parsed = parseCsv(text);
