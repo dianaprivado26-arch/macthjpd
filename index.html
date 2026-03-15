@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel de Matchs - ONG</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Painel de Match entre Padrinhos e Afilhados</h1>
+    <p>Importe dados via CSV, gere matchs por afinidade e exporte o resultado.</p>
+  </header>
+
+  <main class="container">
+    <section class="kpis">
+      <article class="kpi-card">
+        <h2>Padrinhos carregados</h2>
+        <p id="mentor-count">0</p>
+      </article>
+      <article class="kpi-card">
+        <h2>Afilhados carregados</h2>
+        <p id="mentee-count">0</p>
+      </article>
+      <article class="kpi-card">
+        <h2>Matchs gerados</h2>
+        <p id="match-count">0</p>
+      </article>
+    </section>
+
+    <section class="tabs" aria-label="Abas principais">
+      <div class="tab-buttons" role="tablist">
+        <button class="tab-button active" data-tab="padrinho" role="tab" aria-selected="true">Padrinho</button>
+        <button class="tab-button" data-tab="afilhado" role="tab" aria-selected="false">Afilhado</button>
+        <button class="tab-button" data-tab="guia" role="tab" aria-selected="false">Guia</button>
+      </div>
+
+      <div class="tab-content active" id="tab-padrinho" role="tabpanel">
+        <h2>Importar dados de Padrinhos</h2>
+        <p>Cadastro individual ou em massa via CSV (aceita separadores <strong>,</strong> ou <strong>;</strong>).</p>
+
+        <div class="upload-grid">
+          <label class="field">
+            <span>Arquivo CSV</span>
+            <input type="file" id="mentor-file" accept=".csv,text/csv" />
+          </label>
+          <button id="import-mentor" class="btn primary">Importar Padrinhos</button>
+        </div>
+
+        <label class="field">
+          <span>Colar CSV manualmente</span>
+          <textarea id="mentor-paste" rows="8" placeholder="Nome Completo,Profissão,Bairro,Signo,Música,Comunicação,Tempo Livre"></textarea>
+        </label>
+        <button id="import-mentor-paste" class="btn secondary">Enviar texto CSV de Padrinhos</button>
+      </div>
+
+      <div class="tab-content" id="tab-afilhado" role="tabpanel">
+        <h2>Importar dados de Afilhados</h2>
+        <p>Cadastro individual ou em massa via CSV (aceita separadores <strong>,</strong> ou <strong>;</strong>).</p>
+
+        <div class="upload-grid">
+          <label class="field">
+            <span>Arquivo CSV</span>
+            <input type="file" id="mentee-file" accept=".csv,text/csv" />
+          </label>
+          <button id="import-mentee" class="btn primary">Importar Afilhados</button>
+        </div>
+
+        <label class="field">
+          <span>Colar CSV manualmente</span>
+          <textarea id="mentee-paste" rows="8" placeholder="Nome Completo,Profissão,Bairro,Signo,Música,Comunicação,Tempo Livre"></textarea>
+        </label>
+        <button id="import-mentee-paste" class="btn secondary">Enviar texto CSV de Afilhados</button>
+      </div>
+
+      <div class="tab-content" id="tab-guia" role="tabpanel">
+        <h2>Guia de uso</h2>
+        <div class="guide">
+          <h3>Formato CSV aceito</h3>
+          <ul>
+            <li>Separador: vírgula (<strong>,</strong>) ou ponto e vírgula (<strong>;</strong>).</li>
+            <li>Campos obrigatórios: <strong>Nome Completo, Profissão, Bairro, Signo, Música, Comunicação, Tempo Livre</strong>.</li>
+            <li>O sistema remove registros duplicados por nome completo dentro de cada grupo.</li>
+          </ul>
+          <h3>Exemplo de cabeçalho</h3>
+          <code>Nome Completo;Profissão;Bairro;Signo;Música;Comunicação;Tempo Livre</code>
+          <h3>Regras de Match</h3>
+          <ul>
+            <li>1 afilhado só pode ter 1 padrinho.</li>
+            <li>Cada padrinho pode ter no máximo 6 afilhados.</li>
+            <li>Afinidade ponderada: Profissão 40%, Bairro 30%, Signo 15%, Música 15%.</li>
+            <li>A pontuação final é calculada com casas decimais e detalhamento campo a campo (valor do padrinho ↔ valor do afilhado).</li>
+            <li>Meta de assertividade configurada: 98% (exibida como objetivo de qualidade do processo).</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="actions">
+      <button id="run-match" class="btn primary giant">Gerar Matchs</button>
+      <button id="export-match" class="btn secondary giant" disabled>Exportar Matchs CSV</button>
+      <button id="reset-match" class="btn danger giant">Reiniciar Matchs</button>
+      <p id="status" class="status" aria-live="polite"></p>
+    </section>
+
+    <section class="results">
+      <h2>Resultados agrupados por padrinho</h2>
+      <p class="target">Objetivo de assertividade: <strong>98%</strong></p>
+      <div id="match-results" class="match-results"></div>
+    </section>
+  </main>
+
+  <dialog id="confirm-reset">
+    <h2>Tem certeza?</h2>
+    <p>Isso fará você reiniciar todos os matchs.</p>
+    <div class="dialog-actions">
+      <button id="confirm-no" class="btn secondary">Não</button>
+      <button id="confirm-yes" class="btn danger">Sim</button>
+    </div>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
