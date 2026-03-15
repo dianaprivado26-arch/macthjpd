@@ -326,6 +326,14 @@ function renderMatches() {
     const title = document.createElement("h3");
     title.textContent = `${mentorName} (${mentorMatches.length}/6 afilhados)`;
     card.appendChild(title);
+
+    const mentorProfile = mentorMatches[0]?.mentor;
+    if (mentorProfile) {
+      const description = document.createElement("p");
+      description.innerHTML = `<strong>Resumo do padrinho(a):</strong> ${buildMentorBriefDescription(mentorProfile)}`;
+      card.appendChild(description);
+    }
+
     mentorMatches.forEach((match) => {
       const item = document.createElement("div");
       item.className = "match-item";
@@ -355,20 +363,22 @@ function exportMatches() {
       "Padrinho",
       "Afilhado",
       "Pontuação Final",
-      "Conexão 1",
-      "Conexão 2",
-      "Conexão 3",
-      "Conexão 4",
-      "Conexão 5",
-      "Comunicação",
-      "Tempo Livre"
+      "Conexão 1 - Profissão",
+      "Conexão 2 - Bairro",
+      "Conexão 3 - Signo",
+      "Conexão 4 - Música",
+      "Conexão 5 - Comunicação",
+      "Conexão 6 - Tempo Livre"
     ],
     ...matches.map((m) => {
-      const conexao1 = `Profissão: ${safeValue(m.mentor.profissao)} ↔ ${safeValue(m.mentee.profissao)} (${m.score.byField.profissao.toFixed(2)}%)`;
-      const conexao2 = `Bairro: ${safeValue(m.mentor.bairro)} ↔ ${safeValue(m.mentee.bairro)} (${m.score.byField.bairro.toFixed(2)}%)`;
-      const conexao3 = `Signo: ${safeValue(m.mentor.signo)} ↔ ${safeValue(m.mentee.signo)} (${m.score.byField.signo.toFixed(2)}%)`;
-      const conexao4 = `Música: ${safeValue(m.mentor.musica)} ↔ ${safeValue(m.mentee.musica)} (${m.score.byField.musica.toFixed(2)}%)`;
-      const conexao5 = `Perfil de conexão: ${profileConnectionStrength(m.mentor, m.mentee)}`;
+      const conexao1 = `Profissão (${WEIGHTS.profissao}%): ${safeValue(m.mentor.profissao)} ↔ ${safeValue(m.mentee.profissao)} (${m.score.byField.profissao.toFixed(2)}%)`;
+      const conexao2 = `Bairro (${WEIGHTS.bairro}%): ${safeValue(m.mentor.bairro)} ↔ ${safeValue(m.mentee.bairro)} (${m.score.byField.bairro.toFixed(2)}%)`;
+      const conexao3 = `Signo (${WEIGHTS.signo}%): ${safeValue(m.mentor.signo)} ↔ ${safeValue(m.mentee.signo)} (${m.score.byField.signo.toFixed(2)}%)`;
+      const conexao4 = `Música (${WEIGHTS.musica}%): ${safeValue(m.mentor.musica)} ↔ ${safeValue(m.mentee.musica)} (${m.score.byField.musica.toFixed(2)}%)`;
+      const commSimilarity = (similarityByTokens(m.mentor.comunicacao, m.mentee.comunicacao) * 100).toFixed(2);
+      const freeTimeSimilarity = (similarityByTokens(m.mentor.tempoLivre, m.mentee.tempoLivre) * 100).toFixed(2);
+      const conexao5 = `Comunicação: ${safeValue(m.mentor.comunicacao)} ↔ ${safeValue(m.mentee.comunicacao)} (${commSimilarity}%)`;
+      const conexao6 = `Tempo Livre: ${safeValue(m.mentor.tempoLivre)} ↔ ${safeValue(m.mentee.tempoLivre)} (${freeTimeSimilarity}%)`;
 
       return [
         m.mentor.nome,
@@ -379,8 +389,7 @@ function exportMatches() {
         conexao3,
         conexao4,
         conexao5,
-        `${safeValue(m.mentor.comunicacao)} ↔ ${safeValue(m.mentee.comunicacao)}`,
-        `${safeValue(m.mentor.tempoLivre)} ↔ ${safeValue(m.mentee.tempoLivre)}`
+        conexao6
       ];
     })
   ];
@@ -394,6 +403,7 @@ function exportMatches() {
   link.click();
   URL.revokeObjectURL(url);
 }
+
 function resetAll() {
   mentors = [];
   mentees = [];
@@ -450,14 +460,12 @@ function similarityByTokens(left, right) {
   return union === 0 ? 0 : intersection / union;
 }
 
-function profileConnectionStrength(mentor, mentee) {
-  const communicationSimilarity = similarityByTokens(mentor.comunicacao, mentee.comunicacao);
-  const freeTimeSimilarity = similarityByTokens(mentor.tempoLivre, mentee.tempoLivre);
-  const avg = ((communicationSimilarity + freeTimeSimilarity) / 2) * 100;
-
-  if (avg >= 70) return "Alta";
-  if (avg >= 35) return "Média";
-  return "Baixa";
+function buildMentorBriefDescription(mentor) {
+  const profession = safeValue(mentor.profissao);
+  const neighborhood = safeValue(mentor.bairro);
+  const music = safeValue(mentor.musica);
+  const communication = safeValue(mentor.comunicacao);
+  return `Atua em ${profession}, mora em ${neighborhood}, curte ${music} e prefere comunicação ${communication}.`;
 }
 
 function safeValue(value) {
