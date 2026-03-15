@@ -18,6 +18,7 @@ const WEIGHTS = {
 let mentors = [];
 let mentees = [];
 let matches = [];
+let isImportingPaste = false;
 
 const ui = {
   mentorCount: document.getElementById("mentor-count"),
@@ -56,18 +57,23 @@ function setupTabs() {
 }
 
 function setupActions() {
-  document.getElementById("import-mentor").addEventListener("click", () => importFromFile("mentor-file", "mentor"));
-  document.getElementById("import-mentee").addEventListener("click", () => importFromFile("mentee-file", "mentee"));
+  document.getElementById("import-mentor").addEventListener("click", () => handleFileImport("mentor-file", "mentor"));
+  document.getElementById("import-mentee").addEventListener("click", () => handleFileImport("mentee-file", "mentee"));
+
+  document.getElementById("mentor-file").addEventListener("change", () => importFromFile("mentor-file", "mentor"));
+  document.getElementById("mentee-file").addEventListener("change", () => importFromFile("mentee-file", "mentee"));
 
   document.getElementById("mentor-paste-form").addEventListener("submit", (event) => {
     event.preventDefault();
     importFromPaste("mentor-paste", "mentor");
   });
+  document.getElementById("import-mentor-paste").addEventListener("click", () => importFromPaste("mentor-paste", "mentor"));
 
   document.getElementById("mentee-paste-form").addEventListener("submit", (event) => {
     event.preventDefault();
     importFromPaste("mentee-paste", "mentee");
   });
+  document.getElementById("import-mentee-paste").addEventListener("click", () => importFromPaste("mentee-paste", "mentee"));
 
   document.getElementById("mentor-manual-form").addEventListener("submit", (event) => {
     event.preventDefault();
@@ -86,6 +92,20 @@ function setupActions() {
   document.getElementById("confirm-yes").addEventListener("click", resetAll);
 }
 
+
+function handleFileImport(inputId, type) {
+  const input = document.getElementById(inputId);
+  const file = input.files?.[0];
+
+  if (!file) {
+    setStatus("Selecione um arquivo CSV para importar.");
+    input.click();
+    return;
+  }
+
+  importFromFile(inputId, type);
+}
+
 async function importFromFile(inputId, type) {
   const input = document.getElementById(inputId);
   const file = input.files?.[0];
@@ -99,12 +119,20 @@ async function importFromFile(inputId, type) {
 }
 
 function importFromPaste(textareaId, type) {
+  if (isImportingPaste) return;
+  isImportingPaste = true;
+
   const text = document.getElementById(textareaId).value.trim();
   if (!text) {
     setStatus("Cole o conteúdo CSV para enviar.");
+    isImportingPaste = false;
     return;
   }
+
   importCsvText(text, type);
+  setTimeout(() => {
+    isImportingPaste = false;
+  }, 0);
 }
 
 function submitManualForm(type) {
@@ -159,7 +187,7 @@ function parseCsv(text) {
     throw new Error("CSV deve ter cabeçalho e ao menos uma linha de dados.");
   }
 
-  const headerLine = lines[0];
+  const headerLine = lines[0].replace(/^﻿/, "");
   const delimiter = (headerLine.match(/;/g) || []).length > (headerLine.match(/,/g) || []).length ? ";" : ",";
   const rawHeaders = headerLine.split(delimiter).map((h) => h.trim());
   const headers = rawHeaders.map((header) => canonicalizeHeader(header));
