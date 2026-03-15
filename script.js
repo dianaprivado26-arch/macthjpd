@@ -349,18 +349,42 @@ function exportMatches() {
     setStatus("Não há matches para exportar.");
     return;
   }
+
   const rows = [
-    ["Padrinho", "Afilhado", "Pontuação", "Profissão", "Bairro", "Signo", "Música"],
-    ...matches.map((m) => [
-      m.mentor.nome,
-      m.mentee.nome,
-      `${m.score.total.toFixed(2)}%`,
-      `${m.score.byField.profissao.toFixed(2)}%`,
-      `${m.score.byField.bairro.toFixed(2)}%`,
-      `${m.score.byField.signo.toFixed(2)}%`,
-      `${m.score.byField.musica.toFixed(2)}%`
-    ])
+    [
+      "Padrinho",
+      "Afilhado",
+      "Pontuação Final",
+      "Conexão 1",
+      "Conexão 2",
+      "Conexão 3",
+      "Conexão 4",
+      "Conexão 5",
+      "Comunicação",
+      "Tempo Livre"
+    ],
+    ...matches.map((m) => {
+      const conexao1 = `Profissão: ${safeValue(m.mentor.profissao)} ↔ ${safeValue(m.mentee.profissao)} (${m.score.byField.profissao.toFixed(2)}%)`;
+      const conexao2 = `Bairro: ${safeValue(m.mentor.bairro)} ↔ ${safeValue(m.mentee.bairro)} (${m.score.byField.bairro.toFixed(2)}%)`;
+      const conexao3 = `Signo: ${safeValue(m.mentor.signo)} ↔ ${safeValue(m.mentee.signo)} (${m.score.byField.signo.toFixed(2)}%)`;
+      const conexao4 = `Música: ${safeValue(m.mentor.musica)} ↔ ${safeValue(m.mentee.musica)} (${m.score.byField.musica.toFixed(2)}%)`;
+      const conexao5 = `Perfil de conexão: ${profileConnectionStrength(m.mentor, m.mentee)}`;
+
+      return [
+        m.mentor.nome,
+        m.mentee.nome,
+        `${m.score.total.toFixed(2)}%`,
+        conexao1,
+        conexao2,
+        conexao3,
+        conexao4,
+        conexao5,
+        `${safeValue(m.mentor.comunicacao)} ↔ ${safeValue(m.mentee.comunicacao)}`,
+        `${safeValue(m.mentor.tempoLivre)} ↔ ${safeValue(m.mentee.tempoLivre)}`
+      ];
+    })
   ];
+
   const csv = rows.map((line) => line.join(";")).join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
@@ -425,6 +449,17 @@ function similarityByTokens(left, right) {
   const union = new Set([...leftTokens, ...rightTokens]).size;
   return union === 0 ? 0 : intersection / union;
 }
+
+function profileConnectionStrength(mentor, mentee) {
+  const communicationSimilarity = similarityByTokens(mentor.comunicacao, mentee.comunicacao);
+  const freeTimeSimilarity = similarityByTokens(mentor.tempoLivre, mentee.tempoLivre);
+  const avg = ((communicationSimilarity + freeTimeSimilarity) / 2) * 100;
+
+  if (avg >= 70) return "Alta";
+  if (avg >= 35) return "Média";
+  return "Baixa";
+}
+
 function safeValue(value) {
   return value && value.length ? value : "(não informado)";
 }
